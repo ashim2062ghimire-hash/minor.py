@@ -8,4 +8,4 @@ venv/
 data/raw/
 model/
 src/features_extract/waste.py
-*.pdf
+README.pdf
