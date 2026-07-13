@@ -7,3 +7,4 @@ venv/
 *.mat
 data/raw/
 model/
+src/features_extract/waste.py
