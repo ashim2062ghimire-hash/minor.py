@@ -174,5 +174,5 @@ Runs the full pipeline: CWRU extraction → preprocessing → training/evaluatio
 | CWRU signal processing & feature extraction | Complete |
 | ML pipeline (Random Forest, GroupKFold CV) | Complete |
 | CWRU validation results | Complete |
-| ANSYS FEA feature extraction (`02_ansys_extraction.py`) | Not completed |
+| ANSYS FEA feature extraction | Not completed |
 | Sim-to-real cross-domain evaluation | Pending ANSYS completion |
