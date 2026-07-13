@@ -1,14 +1,17 @@
-# Bearing Fault Diagnostics — ML Pipeline & CWRU Validation
+# SIMULATION-BASED PREDICTIVE MAINTENANCE FOR BEARING FAULT DIAGNOSIS USING FINITE ELEMENT ANALYSIS AND RANDOM FOREST CLASSIFIER
 
 ## Overview
 
-This repository implements a machine learning pipeline for rolling-element bearing fault diagnosis, trained and cross-validated on the Case Western Reserve University (CWRU) bearing dataset. The pipeline is built with schema parity in mind so that ANSYS FEA-simulated data can be dropped into the same feature/label format for sim-to-real transfer experiments.
+This repository contains the core software implementation, machine learning pipeline, and data validation scripts for the project.
 
-This README documents the **completed** CWRU + ML components. The ANSYS simulation branch (`src/features_extract/02_ansys_extraction.py`) is a stub and is not yet implemented — it is tracked as future work, not part of this document.
+The system leverages data from **Finite Element Analysis (FEA)** simulations alongside physical experimental data (**CWRU Bearing Dataset**) to build a robust **Random Forest Classifier** capable of identifying and diagnosing structural bearing faults.
+
+This README documents the __completed__ CWRU + ML components. The ANSYS simulation branch (`src/features_extract/step_01_noise_inject.py` and `src/features_extract/step02_ansys_extraction.py`) is a stub and is not yet implemented — it is tracked as future work, not part of this document.
 
 ---
 
 ## Project Structure
+
 ```text
 minor.py/
 ├── README.md
@@ -42,11 +45,12 @@ minor.py/
     ├── utils_features.py
     └── utils_ml.py
 ```
+
 > `data/raw`, `data/processed`, `data/splits`, and `model/` are generated at runtime and are gitignored — not shown above.
 
 ## Dataset & File Naming
 
-**Source:** CWRU Bearing Data Center, renamed per `data/mapping/fault_group_mapping.json`.
+__Source:__ CWRU Bearing Data Center, renamed per `data/mapping/fault_group_mapping.json`.
 
 Raw `.mat` filenames follow `<FAMILY><DEFECT_SIZE>_<HP_INDEX>.mat`, mapped to the 10-class scheme as follows:
 
@@ -65,18 +69,19 @@ Raw `.mat` filenames follow `<FAMILY><DEFECT_SIZE>_<HP_INDEX>.mat`, mapped to th
 
 The `_0/_1/_2/_3` suffix denotes motor load (0–3 HP, RPM ≈ 1797/1772/1750/1730 respectively), used as the `hp_group` for `StratifiedGroupKFold`.
 
-**Bearing geometry:** SKF 6205-2RS JEM, SKF 6203-2RS JEM
+**Bearing type:** SKF 6205-2RS JEM
 
 ---
 
 ## Signal Processing Pipeline (`step03_cwru_extraction.py`)
 
 1. **Drift removal:** 10 Hz highpass Butterworth (order 4), `sosfiltfilt`, applied to the full raw signal.
-2. **Sample-rate alignment:** Healthy signals are natively sampled at 48 kHz vs. 12 kHz for faulty signals — healthy signals are downsampled via `resample_poly` (up=1, down=4) to match 12 kHz across all classes.
+2. __Sample-rate alignment:__ Healthy signals are natively sampled at 48 kHz vs. 12 kHz for faulty signals — healthy signals are downsampled via `resample_poly` (up=1, down=4) to match 12 kHz across all classes.
 3. **Fault-band highpass:** 1000 Hz highpass Butterworth (order 4), applied to the full aligned signal before segmentation (avoids edge artifacts from windowed filtering).
 4. **Segmentation:** 2000-sample windows, 50% overlap.
 
 ### Envelope / characteristic-frequency features
+
 Per segment, the Hilbert envelope is computed and its FFT is searched near BPFO, BPFI, and BSF (and their 2×/3× harmonics) within a **±5 Hz tolerance**, summing matched peaks.
 
 ---
@@ -98,6 +103,7 @@ Per segment, the Hilbert envelope is computed and its FFT is searched near BPFO,
 | 11 | BPFI Ratio | BPFI amp / (BPFO+BPFI+BSF amp) |
 | 12 | BSF Ratio | BSF amp / (BPFO+BPFI+BSF amp) |
 
+The BPFO, BPFI, and BSF amplitudes are calculated by summing the peak spectral energies found across their fundamental frequencies and first two harmonics (1x, 2x and 3x the target frequency).
 The three ratio features disentangle **fault family** (IR/OR/Ball) from raw signal energy; the combined denominator (sum of all three characteristic amplitudes) acts as an implicit gatekeeper — near-zero for a healthy bearing, preventing noisy ratios from driving false fault predictions.
 
 All features are Min-Max normalized (`normalize_dataset`) prior to model training.
@@ -106,11 +112,12 @@ All features are Min-Max normalized (`normalize_dataset`) prior to model trainin
 
 ## Model & Validation (`step05_training_and_evaluation.py`)
 
-- **Classifier:** `RandomForestClassifier` — `n_estimators=300`, `max_depth=100`, `min_samples_split=7`, `max_features=5`, `random_state=9`
-- **Cross-validation:** `StratifiedGroupKFold`, folds = number of unique `hp_group` values, grouped by load condition (leave-one-HP-out style evaluation)
-- **Serialization:** `joblib` → `model/random_forest_model.joblib`
+- __Classifier:__ `RandomForestClassifier` — `n_estimators=300`, `max_depth=100`, `min_samples_split=7`, `max_features=5`, `random_state=9`
+- __Cross-validation:__ `StratifiedGroupKFold`, folds = number of unique `hp_group` values, grouped by load condition (leave-one-HP-out style evaluation)
+- __Serialization:__ `joblib` → `model/random_forest_model.joblib`
 
 ### Evaluation outputs
+
 - Row-normalized confusion matrix (`output/cwru_confusion_matrix.png`)
 - Per-class F1 (`output/cwru_f1.npy`)
 
@@ -164,8 +171,8 @@ Runs the full pipeline: CWRU extraction → preprocessing → training/evaluatio
 
 | Component | Status |
 |---|---|
-| CWRU signal processing & feature extraction | ✅ Complete |
-| ML pipeline (Random Forest, GroupKFold CV) | ✅ Complete |
-| CWRU validation results | ✅ Complete |
-| ANSYS FEA feature extraction (`02_ansys_extraction.py`) | ⏳ Not completed |
-| Sim-to-real cross-domain evaluation | ⏳ Pending ANSYS completion |
+| CWRU signal processing & feature extraction | Complete |
+| ML pipeline (Random Forest, GroupKFold CV) | Complete |
+| CWRU validation results | Complete |
+| ANSYS FEA feature extraction (`02_ansys_extraction.py`) | Not completed |
+| Sim-to-real cross-domain evaluation | Pending ANSYS completion |
