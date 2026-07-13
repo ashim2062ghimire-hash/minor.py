@@ -9,7 +9,7 @@ This README documents the **completed** CWRU + ML components. The ANSYS simulati
 ---
 
 ## Project Structure
-
+```text
 minor.py/
 ├── README.md
 ├── data/
@@ -41,7 +41,7 @@ minor.py/
 └── utils/
     ├── utils_features.py
     └── utils_ml.py
-
+```
 > `data/raw`, `data/processed`, `data/splits`, and `model/` are generated at runtime and are gitignored — not shown above.
 
 ## Dataset & File Naming
