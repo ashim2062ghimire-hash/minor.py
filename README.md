@@ -118,7 +118,7 @@ All features are Min-Max normalized (`normalize_dataset`) prior to model trainin
 
 ## CWRU Results
 
-Per-class F1 (5-fold, stratified group cross-validation):
+Per-class F1-score (4-fold, stratified group cross-validation):
 
 | Fault Class | F1-Score |
 |---|---|
@@ -167,5 +167,5 @@ Runs the full pipeline: CWRU extraction → preprocessing → training/evaluatio
 | CWRU signal processing & feature extraction | ✅ Complete |
 | ML pipeline (Random Forest, GroupKFold CV) | ✅ Complete |
 | CWRU validation results | ✅ Complete |
-| ANSYS FEA feature extraction (`02_ansys_extraction.py`) | ⏳ Not implemented |
+| ANSYS FEA feature extraction (`02_ansys_extraction.py`) | ⏳ Not completed |
 | Sim-to-real cross-domain evaluation | ⏳ Pending ANSYS completion |
