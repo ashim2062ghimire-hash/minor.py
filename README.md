@@ -96,9 +96,9 @@ Per segment, the Hilbert envelope is computed and its FFT is searched near BPFO,
 | 4 | Standard Deviation | — |
 | 5 | Dominant Frequency | Frequency bin of max FFT magnitude |
 | 6 | Peak FFT Amplitude | Magnitude at dominant frequency |
-| 7 | BPFO Amplitude | Envelope-FFT energy near outer-race fault frequency |
-| 8 | BPFI Amplitude | Envelope-FFT energy near inner-race fault frequency |
-| 9 | BSF Amplitude | Envelope-FFT energy near ball-spin frequency |
+| 7 | BPFO Amplitude | Sum of Envelope-FFT energy near 3 Harmonics of outer-race fault frequency |
+| 8 | BPFI Amplitude | Sum of Envelope-FFT energy near 3 Harmonics of inner-race fault frequency |
+| 9 | BSF Amplitude | Sum of Envelope-FFT energy near 3 Harmonics of ball-spin frequency |
 | 10 | BPFO Ratio | BPFO amp / (BPFO+BPFI+BSF amp) |
 | 11 | BPFI Ratio | BPFI amp / (BPFO+BPFI+BSF amp) |
 | 12 | BSF Ratio | BSF amp / (BPFO+BPFI+BSF amp) |
@@ -107,6 +107,18 @@ The BPFO, BPFI, and BSF amplitudes are calculated by summing the peak spectral e
 The three ratio features disentangle **fault family** (IR/OR/Ball) from raw signal energy; the combined denominator (sum of all three characteristic amplitudes) acts as an implicit gatekeeper — near-zero for a healthy bearing, preventing noisy ratios from driving false fault predictions.
 
 All features are Min-Max normalized (`normalize_dataset`) prior to model training.
+
+---
+
+## Data Preprocessing (`step04_preprocessing.py`)
+
+Takes the normalized feature CSVs produced by feature extraction (`cwru_features_norm.csv` and `ansys_features_norm.csv` — normalization itself happens upstream, at the end of `step03_cwru_extraction.py`) and prepares them for model training:
+
+- Loads both the CWRU and ANSYS feature CSVs, raising an explicit error if either is missing rather than failing silently downstream.
+- Splits each dataset into three aligned arrays: `X` (all feature columns), `groups` (second-to-last column — the HP load group, used for `StratifiedGroupKFold` splitting), and `y` (final column — the fault class label).
+- Persists each array to disk as `.npy` files (`X_cwru.npy`, `groups_cwru.npy`, `y_cwru.npy`, and the ANSYS equivalents) under `data/splits/`, decoupling preprocessing from training so the pipeline can be re-run without re-parsing CSVs each time.
+
+This stage performs no additional transformation of its own — normalization is already complete by the time features reach this step; its role is purely to isolate and persist properly shaped train/eval arrays for `step05_training_and_evaluation.py` to consume.
 
 ---
 
@@ -129,16 +141,16 @@ Per-class F1-score (4-fold, stratified group cross-validation):
 
 | Fault Class | F1-Score |
 |---|---|
-| Healthy | 1.000 |
-| IR Minor | 0.982 |
-| IR Moderate | 0.914 |
-| IR Severe | 0.930 |
-| OR Minor | 0.988 |
-| OR Moderate | 0.910 |
-| OR Severe | 0.923 |
-| Ball Minor | 0.975 |
-| Ball Moderate | 0.911 |
-| Ball Severe | 0.934 |
+| Healthy | 0.9563 |
+| IR Minor | 0.9969 |
+| IR Moderate | 0.9682 |
+| IR Severe | 1.000 |
+| OR Minor | 0.9834 |
+| OR Moderate | 0.9169 |
+| OR Severe | 0.902 |
+| Ball Minor | 1.000 |
+| Ball Moderate | 0.8968 |
+| Ball Severe | 1.000 |
 
 **Pattern:** Healthy is perfectly separated; every *Moderate*-severity class (IR, OR, Ball) sits at the bottom of the ranking (~0.91), consistently lower than its corresponding Minor and Severe neighbors. This is physically consistent — Moderate severity sits at the transition boundary between Minor and Severe defect sizes, so it's most prone to spectral overlap with its immediate neighbors on either side.
 
