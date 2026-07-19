@@ -10,4 +10,3 @@ model/
 src/features_extract/waste.py
 README.pdf
 *.pdf
-.gitignore

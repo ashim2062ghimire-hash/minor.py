@@ -15,6 +15,7 @@ This README documents the __completed__ CWRU + ML components. The ANSYS simulati
 ```text
 minor.py/
 ├── README.md
+├── .gitignore
 ├── data/
 │   ├── mapping/
 │   │   ├── class_mapping.json
