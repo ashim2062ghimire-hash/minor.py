@@ -141,16 +141,16 @@ Per-class F1-score (4-fold, stratified group cross-validation):
 
 | Fault Class | F1-Score |
 |---|---|
-| Healthy | 0.9563 |
-| IR Minor | 0.9969 |
-| IR Moderate | 0.9682 |
-| IR Severe | 1.000 |
-| OR Minor | 0.9834 |
-| OR Moderate | 0.9169 |
-| OR Severe | 0.902 |
-| Ball Minor | 1.000 |
-| Ball Moderate | 0.8968 |
-| Ball Severe | 1.000 |
+Healthy              | 1.0000|
+IR Minor             | 0.9979|
+IR Moderate          | 0.9885|
+IR Severe            | 1.0000|
+OR Minor             | 0.9845|
+OR Moderate          | 0.9384|
+OR Severe            | 0.9071|
+Ball Minor           | 1.0000|
+Ball Moderate        | 0.9331|
+Ball Severe          | 1.0000|
 
 **Pattern:** Healthy is perfectly separated; every *Moderate*-severity class (IR, OR, Ball) sits at the bottom of the ranking (~0.91), consistently lower than its corresponding Minor and Severe neighbors. This is physically consistent — Moderate severity sits at the transition boundary between Minor and Severe defect sizes, so it's most prone to spectral overlap with its immediate neighbors on either side.
 
