@@ -32,7 +32,7 @@ def load_X_y_groups(prefix):
     return X, y, groups
 
 def cm_f1(y_true, y_pred, output_dir, prefix, unique_classes, display_labels):
-    f1 = f1_score(y_true, y_pred, average="weighted")
+    f1 = f1_score(y_true, y_pred, average=None)
     os.makedirs(output_dir, exist_ok=True)
     np.save(os.path.join(output_dir, f"{prefix}_f1.npy"), f1)
     print(f"-> Successfully saved f1-score to 'output/{prefix}_f1.npy'")
